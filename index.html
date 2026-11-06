@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EDITH AI</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #101522;
+    color: white;
+    text-align: center;
+}
+
+header {
+    background: #171f35;
+    padding: 22px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #00d9ff;
+}
+
+.container {
+    padding: 20px;
+    max-width: 600px;
+    margin: auto;
+}
+
+#chat {
+    height: 55vh;
+    overflow-y: auto;
+    background: #1b253b;
+    border-radius: 15px;
+    padding: 15px;
+    text-align: left;
+}
+
+.message {
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 12px;
+    line-height: 1.5;
+}
+
+.user {
+    background: #174f76;
+    text-align: right;
+}
+
+.bot {
+    background: #303b52;
+}
+
+.input-area {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+input {
+    flex: 1;
+    padding: 15px;
+    border-radius: 10px;
+    border: none;
+    font-size: 16px;
+}
+
+button {
+    background: #00bde8;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<header>🤖 EDITH AI</header>
+
+<div class="container">
+
+<h2>Hello! I'm Edith.</h2>
+<p>Your personal AI assistant.</p>
+
+<div id="chat">
+<div class="message bot">
+Hello Nithish! Welcome to EDITH AI.
+How can I help you today?
+</div>
+</div>
+
+<div class="input-area">
+<input id="userInput"
+placeholder="Ask Edith anything..."
+onkeydown="if(event.key==='Enter') sendMessage()">
+
+<button onclick="sendMessage()">Send</button>
+</div>
+
+</div>
+
+<script>
+
+function sendMessage() {
+
+const input = document.getElementById("userInput");
+const chat = document.getElementById("chat");
+
+const text = input.value.trim();
+
+if (!text) return;
+
+chat.innerHTML +=
+'<div class="message user">' + escapeHTML(text) + '</div>';
+
+input.value = "";
+
+let reply = "I'm Edith! I'm still learning. Soon I'll have more AI capabilities.";
+
+const message = text.toLowerCase();
+
+if (message.includes("hello") || message.includes("hi")) {
+reply = "Hello Nithish! Welcome back. How can I help you?";
+}
+else if (message.includes("your name")) {
+reply = "My name is EDITH AI!";
+}
+else if (message.includes("who created you")) {
+reply = "I was created by Nithish!";
+}
+else if (message.includes("how are you")) {
+reply = "I'm functioning perfectly! How can I help you?";
+}
+else if (message.includes("time")) {
+reply = "Your current device time is " +
+new Date().toLocaleTimeString();
+}
+else if (message.includes("date")) {
+reply = "Today's date is " +
+new Date().toLocaleDateString();
+}
+else if (message.includes("bye")) {
+reply = "Goodbye Nithish! See you soon.";
+}
+
+chat.innerHTML +=
+'<div class="message bot">' + escapeHTML(reply) + '</div>';
+
+chat.scrollTop = chat.scrollHeight;
+
+}
+
+function escapeHTML(text) {
+return text.replace(/[&<>"']/g, function(char) {
+return {
+'&':'&amp;',
+'<':'&lt;',
+'>':'&gt;',
+'"':'&quot;',
+"'":'&#039;'
+}[char];
+});
+}
+
+</script>
+
+</body>
+</html>
