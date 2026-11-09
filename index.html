@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,166 +7,224 @@
 <title>EDITH AI</title>
 
 <style>
+* { box-sizing: border-box; }
+
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #101522;
-    color: white;
-    text-align: center;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #081321;
+  color: white;
 }
 
 header {
-    background: #171f35;
-    padding: 22px;
-    font-size: 28px;
-    font-weight: bold;
-    color: #00d9ff;
+  background: #102d46;
+  padding: 20px;
+  text-align: center;
+  border-bottom: 2px solid #00cfff;
 }
 
-.container {
-    padding: 20px;
-    max-width: 600px;
-    margin: auto;
+header h1 {
+  margin: 0;
+  color: #00d9ff;
+  letter-spacing: 4px;
 }
+
+header p { color: #b7dce9; }
 
 #chat {
-    height: 55vh;
-    overflow-y: auto;
-    background: #1b253b;
-    border-radius: 15px;
-    padding: 15px;
-    text-align: left;
+  height: calc(100dvh - 190px);
+  overflow-y: auto;
+  padding: 16px;
 }
 
 .message {
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 12px;
-    line-height: 1.5;
-}
-
-.user {
-    background: #174f76;
-    text-align: right;
+  padding: 12px 15px;
+  margin: 10px 0;
+  border-radius: 14px;
+  max-width: 85%;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .bot {
-    background: #303b52;
+  background: #173b55;
+  border: 1px solid #00bce8;
 }
 
-.input-area {
-    display: flex;
-    gap: 8px;
-    margin-top: 15px;
+.user {
+  background: #075c82;
+  margin-left: auto;
+}
+
+.controls {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  padding: 12px;
+  background: #102d46;
+  display: flex;
+  gap: 8px;
 }
 
 input {
-    flex: 1;
-    padding: 15px;
-    border-radius: 10px;
-    border: none;
-    font-size: 16px;
+  flex: 1;
+  min-width: 0;
+  padding: 13px;
+  border-radius: 10px;
+  border: 1px solid #00cfff;
+  background: #081321;
+  color: white;
+  font-size: 16px;
 }
 
 button {
-    background: #00bde8;
-    border: none;
-    padding: 14px 20px;
-    border-radius: 10px;
-    font-weight: bold;
+  background: #00bce8;
+  color: #001521;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: bold;
 }
+
+#voice { background: #b5eaff; }
 </style>
 </head>
 
 <body>
 
-<header>🤖 EDITH AI</header>
+<header>
+<h1>EDITH AI</h1>
+<p>Your Personal Digital Assistant</p>
+</header>
 
-<div class="container">
+<div id="chat" aria-live="polite"></div>
 
-<h2>Hello! I'm Edith.</h2>
-<p>Your personal AI assistant.</p>
-
-<div id="chat">
-<div class="message bot">
-Hello Nithish! Welcome to EDITH AI.
-How can I help you today?
-</div>
-</div>
-
-<div class="input-area">
-<input id="userInput"
-placeholder="Ask Edith anything..."
-onkeydown="if(event.key==='Enter') sendMessage()">
-
-<button onclick="sendMessage()">Send</button>
-</div>
-
+<div class="controls">
+<input id="input" placeholder="Ask Edith anything..." />
+<button id="send">SEND</button>
+<button id="voice">🎤</button>
 </div>
 
 <script>
+const chat = document.getElementById("chat");
+const input = document.getElementById("input");
+
+function addMessage(text, type) {
+  const div = document.createElement("div");
+  div.className = "message " + type;
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return div;
+}
+
+function speak(text) {
+  if (!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.lang = "en-IN";
+  speechSynthesis.speak(speech);
+}
+
+function remember(text, type) {
+  try {
+    const history = JSON.parse(
+      localStorage.getItem("edithHistory") || "[]"
+    );
+    history.push({text, type});
+    localStorage.setItem(
+      "edithHistory",
+      JSON.stringify(history.slice(-50))
+    );
+  } catch(e) {}
+}
+
+function respond(message) {
+  const q = message.toLowerCase();
+
+  if (q.includes("hello") || q.includes("hi"))
+    return "Hello! I am Edith. How can I help you today?";
+
+  if (q.includes("your name"))
+    return "My name is Edith, your personal digital assistant.";
+
+  if (q.includes("who created you"))
+    return "I am Edith, created as your personal AI project.";
+
+  if (q.includes("time"))
+    return "The current time is " +
+      new Date().toLocaleTimeString();
+
+  if (q.includes("date"))
+    return "Today's date is " +
+      new Date().toLocaleDateString();
+
+  if (q.includes("jee"))
+    return "I can help you study Physics, Chemistry and Mathematics for JEE.";
+
+  if (q.includes("thank"))
+    return "You're welcome! What else can I help you with?";
+
+  if (q.includes("how are you"))
+    return "I am running well! Ready to help you.";
+
+  return "I am still learning! I can answer a few built-in questions right now. A real AI connection will be needed for broader intelligent answers.";
+}
 
 function sendMessage() {
+  const message = input.value.trim();
+  if (!message) return;
 
-const input = document.getElementById("userInput");
-const chat = document.getElementById("chat");
+  addMessage(message, "user");
+  remember(message, "user");
+  input.value = "";
 
-const text = input.value.trim();
-
-if (!text) return;
-
-chat.innerHTML +=
-'<div class="message user">' + escapeHTML(text) + '</div>';
-
-input.value = "";
-
-let reply = "I'm Edith! I'm still learning. Soon I'll have more AI capabilities.";
-
-const message = text.toLowerCase();
-
-if (message.includes("hello") || message.includes("hi")) {
-reply = "Hello Nithish! Welcome back. How can I help you?";
-}
-else if (message.includes("your name")) {
-reply = "My name is EDITH AI!";
-}
-else if (message.includes("who created you")) {
-reply = "I was created by Nithish!";
-}
-else if (message.includes("how are you")) {
-reply = "I'm functioning perfectly! How can I help you?";
-}
-else if (message.includes("time")) {
-reply = "Your current device time is " +
-new Date().toLocaleTimeString();
-}
-else if (message.includes("date")) {
-reply = "Today's date is " +
-new Date().toLocaleDateString();
-}
-else if (message.includes("bye")) {
-reply = "Goodbye Nithish! See you soon.";
+  const answer = respond(message);
+  addMessage(answer, "bot");
+  remember(answer, "bot");
+  speak(answer);
 }
 
-chat.innerHTML +=
-'<div class="message bot">' + escapeHTML(reply) + '</div>';
+document.getElementById("send")
+  .addEventListener("click", sendMessage);
 
-chat.scrollTop = chat.scrollHeight;
-
-}
-
-function escapeHTML(text) {
-return text.replace(/[&<>"']/g, function(char) {
-return {
-'&':'&amp;',
-'<':'&lt;',
-'>':'&gt;',
-'"':'&quot;',
-"'":'&#039;'
-}[char];
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter") sendMessage();
 });
-}
 
+document.getElementById("voice")
+  .addEventListener("click", () => {
+    const Recognition =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
+
+    if (!Recognition) {
+      addMessage("Voice input is not supported in this browser. Try Chrome.", "bot");
+      return;
+    }
+
+    const recognition = new Recognition();
+    recognition.lang = "en-IN";
+    recognition.onresult = event => {
+      input.value = event.results[0][0].transcript;
+      sendMessage();
+    };
+    recognition.onerror = () =>
+      addMessage("Microphone unavailable. Please check browser permissions.", "bot");
+
+    recognition.start();
+  });
+
+try {
+  const history = JSON.parse(
+    localStorage.getItem("edithHistory") || "[]"
+  );
+  history.forEach(item => addMessage(item.text, item.type));
+} catch(e) {}
+
+if (!chat.children.length) {
+  addMessage("Hello! I am Edith. Your digital assistant is ready!", "bot");
+}
 </script>
 
 </body>
